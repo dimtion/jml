@@ -144,7 +144,7 @@ def get_pid_en(name):
 def initializationCode (mazeWidth, mazeHeight, mazeMap, timeAllowed, playerLocation, opponentLocation, coins) :
     
     # [YOUR CODE HERE]
-    pid = get_pid_en("python3")
+    pid = get_pid_en("demoAI")
     debug(pid)
     
     for p in pid:
