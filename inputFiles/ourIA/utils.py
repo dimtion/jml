@@ -13,6 +13,8 @@ RIGHT = 'R'
 ############# Data structures ######################
 ####################################################
 import interface as api
+import algorithms as algo
+import utils as u
 
 class StackQueue(list):
     """A class that is either a Stack or a Queue"""
@@ -119,5 +121,64 @@ def create_distances_routing_roy(mazeMap):
     return dist, route
 
 
+#### Calc all dists
+def dists_from_each(locations, maze_map):
+    """ Return the dists and routes from each locations
+    TODO :
+    - Cache routes and dists
+    """
+    dists_matrix = {l: {} for l in locations}
+    routes_matrix = {l: {} for l in locations}
+
+    for i in range(len(locations)):
+        l1 = locations[i]
+        routing_table, dists_table = algo.dijkstra(maze_map, l1)
+
+        for j in range(0, len(locations)):
+            l2 = locations[j]
+            route = u.way_width(routing_table, l1, l2)
+
+            dists_matrix[l1][l2] = dists_table[l2]
+            routes_matrix[l1][l2] = route
+
+            dists_matrix[l2][l1] = dists_table[l2]
+            routes_matrix[l2][l1] = [l for l in reversed(route[:-1])] + [l1]
+
+    return dists_matrix, routes_matrix
 
 
+def update_dists_from_each(dists_matrix, routes_matrix, new_location, maze_map, coins):
+    routing_table, dists_table = algo.dijkstra(maze_map, new_location)
+    dists_matrix[new_location] = {}
+    routes_matrix[new_location] = {}
+    for loc in coins:
+        route = u.way_width(routing_table, new_location, loc)
+
+        dists_matrix[new_location][loc] = dists_table[loc]
+        routes_matrix[new_location][loc] = route
+
+        dists_matrix[loc][new_location] = dists_table[loc]
+        routes_matrix[loc][new_location] = [l for l in reversed(route[:-1])] + [new_location]
+    return dists_matrix, routes_matrix
+
+
+def get_shortest(location, coins_list, remaining_coins):
+    """ Return the nearest remaining_coins from location"""
+    dists_list = coins_list[location]
+    min_dist = float('inf')
+    min_loc = (0, 0)
+    for loc in remaining_coins:
+        if dists_list[loc] < min_dist:
+            min_dist = dists_list[loc]
+            min_loc = loc
+    return min_loc, min_dist
+
+
+def location_list_to_route(locations, routes_list):
+    """Convert a location list to a real route"""
+    route = []
+    for i in range(len(locations) - 1):
+        l1, l2 = locations[i], locations[i+1]
+        route += routes_list[l1][l2]
+
+    return route

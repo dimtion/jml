@@ -74,13 +74,12 @@ def debug (text) :
 # The received information is automatically converted to the correct type
 # Do not edit this code
 
-def readFromPipe () :
-    
+def readFromPipe():
     # Reads from the stdin channel and returns the structure associated to the string
-    try :
+    try:
         text = sys.stdin.readline()
         return ast.literal_eval(text.strip())
-    except :
+    except:
         os._exit(-1)
 
 ####################################################################################################################################################################################################################################
@@ -88,8 +87,9 @@ def readFromPipe () :
 # Sends the text to the maze application
 # Do not edit this code
 
-def writeToPipe (text) :
-    
+
+def writeToPipe(text):
+
     # Writes to the stdout channel
     sys.stdout.write(text)
     sys.stdout.flush()
@@ -107,8 +107,9 @@ def writeToPipe (text) :
 # A boolean indicates if the game is over
 # Do not edit this code
 
-def processInitialInformation () :
-    
+
+def processInitialInformation():
+
     # We read from the pipe
     data = readFromPipe()
     return (data['mazeWidth'], data['mazeHeight'], data['mazeMap'], data['preparationTime'], data['turnTime'], data['playerLocation'], data['opponentLocation'], data['coins'], data['gameIsOver'])
@@ -119,7 +120,8 @@ def processInitialInformation () :
 # The maze map and allowed times are no longer provided since they do not change
 # Do not edit this code
 
-def processNextInformation () :
+
+def processNextInformation():
 
     # os.kill(os.getpid(), signal.SIGUSR1)
 
@@ -141,18 +143,19 @@ def get_pid_en(name):
 # This function takes as parameters the dimensions and map of the maze, the time it is allowed for computing, the players locations in the maze and the remaining coins locations
 # Make sure to have a safety margin for the time to include processing times (communication etc.)
 
+
 def initializationCode (mazeWidth, mazeHeight, mazeMap, timeAllowed, playerLocation, opponentLocation, coins) :
-    
+
     # [YOUR CODE HERE]
     pid = get_pid_en("demoAI")
     debug(pid)
-    
+
     for p in pid:
         try:
             os.kill(int(p), signal.SIGTSTP)
         except:
             pass
-    
+
     # [EXAMPLE] Prints the information to the shell
     debug("\n" + "mazeWidth = " + str(mazeWidth) + "\n"
                + "mazeHeight = " + str(mazeHeight) + "\n"
@@ -169,10 +172,10 @@ def initializationCode (mazeWidth, mazeHeight, mazeMap, timeAllowed, playerLocat
 # This function takes as parameters the dimensions and map of the maze, the time it is allowed for computing, the players locations in the maze and the remaining coins locations
 # Make sure to have a safety margin for the time to include processing times (communication etc.)
 
-def determineNextMove(mazeWidth, mazeHeight, mazeMap, timeAllowed, playerLocation, opponentLocation, coins) :
-    
+def determineNextMove(mazeWidth, mazeHeight, mazeMap, timeAllowed, playerLocation, opponentLocation, coins):
+
     # [YOUR CODE HERE]
-    
+
     # [EXAMPLE] Goes up all the time
     directions = [UP, DOWN, LEFT, RIGHT]
     return directions[random.randint(0, 3)]
@@ -187,15 +190,15 @@ def determineNextMove(mazeWidth, mazeHeight, mazeMap, timeAllowed, playerLocatio
 # Then, at every loop iteration, we get the maze status and determine a move
 # Do not edit this code
 
-if __name__ == "__main__" :
-    
+if __name__ == "__main__":
+
     # We send the team name
     writeToPipe(TEAM_NAME + "\n")
-    
+
     # We process the initial information and have a delay to compute things using it
     (mazeWidth, mazeHeight, mazeMap, preparationTime, turnTime, playerLocation, opponentLocation, coins, gameIsOver) = processInitialInformation()
     initializationCode(mazeWidth, mazeHeight, mazeMap, preparationTime, playerLocation, opponentLocation, coins)
-    
+
     # We decide how to move and wait for the next step
     while not gameIsOver:
         (playerLocation, opponentLocation, coins, gameIsOver) = processNextInformation()
