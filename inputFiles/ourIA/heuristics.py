@@ -12,7 +12,8 @@ IAName = "OPT OPTIMISATION"
 (mazeWidth, mazeHeight, mazeMap, preparationTime, turnTime, playerLocation, opponentLocation, coins, gameIsOver) = api.initGame(IAName)
 coinsNumber = len(coins) + 1
 route = []
-old_coins = []
+old_coins = [playerLocation]
+
 
 def dists_from_each(locations, maze_map):
     """ Return the dists and routes from each locations
@@ -67,10 +68,10 @@ def get_shortest(location, coins_list, remaining_coins):
 
 def path_from_nearest(playerLocation, opponentLocation, coins, all_dists):
     # remaining_coins = [c for c in coins if all_dists[c][playerLocation] < all_dists[c][opponentLocation]]  # ne marche pas très bien
-    avg = sum(all_dists[playerLocation][c] for c in coins) / len(coins)
-    remaining_coins = [c for c in coins if all_dists[c][playerLocation] < avg + 1]
-    if len(remaining_coins) < 5:
-        remaining_coins = coins[:]
+    # avg = sum(all_dists[playerLocation][c] for c in coins) / len(coins)
+    # remaining_coins = [c for c in coins if all_dists[c][playerLocation] < avg + 1]
+    # if len(remaining_coins) < 5:
+    remaining_coins = coins[:]
 
     coins_route = [playerLocation]
     coins_length = 0
@@ -89,15 +90,12 @@ def location_list_to_route(locations, routes_list):
         route += routes_list[l1][l2]
     return route
 
+
 def evaluate_route(route, coins_dists):
     route_score = 0
     for i in range(len(route) - 1):
         l1, l2 = route[i], route[i+1]
-        try:
-            route_score += coins_dists[l1][l2]
-        except:
-            api.debug(route)
-            api.debug(str(l1) + " " + str(l2))
+        route_score += coins_dists[l1][l2]
     return route_score
 
 
@@ -128,17 +126,18 @@ def determineNextMove(playerLocation, opponentLocation, coins):
     # update for our location
     update_dists_from_each(dists_matrix, routes_matrix, playerLocation, mazeMap, coins)
     # update the oponent location
-    update_dists_from_each(dists_matrix, routes_matrix, opponentLocation, mazeMap, coins)
+    try:
+        update_dists_from_each(dists_matrix, routes_matrix, opponentLocation, mazeMap, coins)
+    except:
+        pass
     # api.debug("Time : " + str(time() - t))
-
+    meta_route = [c for c in meta_route if c in coins]
     # api.debug("Calc init route...")
     t = time()
     if playerLocation in old_coins:
-        meta_route, meta_route_len = path_from_nearest(playerLocation, opponentLocation, coins, dists_matrix)
         next_coin = meta_route.pop(0)
-        next_coin = meta_route.pop(0)
+        route = location_list_to_route([playerLocation, next_coin], routes_matrix)
     # api.debug("Time : " + str(time() - t))  
-    route = location_list_to_route([playerLocation, next_coin], routes_matrix)
 
     next_move = route.pop(0)  # Discard the first element to avoid back and forth
 
@@ -160,13 +159,16 @@ def determineNextMove(playerLocation, opponentLocation, coins):
 api.debug("Calc all dists...")
 t = time()
 t0 = t
-dists_matrix, routes_matrix = dists_from_each([playerLocation, opponentLocation] + coins, mazeMap)
+locs = [playerLocation] + coins
+if opponentLocation != (-1, -1):
+    locs.append(opponentLocation)
+
+dists_matrix, routes_matrix = dists_from_each(locs, mazeMap)
 api.debug("Time : " + str(time() - t))
 
 api.debug("Calc init route...")
 t = time()
 meta_route, meta_route_len = path_from_nearest(playerLocation, opponentLocation,  coins, dists_matrix)
-next_coin = meta_route.pop(0)
 next_coin = meta_route.pop(0)
 
 api.debug("Time : " + str(time() - t))
@@ -174,7 +176,7 @@ api.debug(meta_route_len)
 
 api.debug("Optimising route...")
 t = time()
-for _ in range(20000):
+for _ in range(100000):
     meta_route, meta_route_len = opt_algorithm(meta_route, meta_route_len, dists_matrix)
 api.debug("Time : " + str(time() - t))
 

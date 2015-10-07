@@ -12,7 +12,7 @@ RIGHT = 'R'
 ####################################################
 ############# Data structures ######################
 ####################################################
-
+import interface as api
 
 class StackQueue(list):
     """A class that is either a Stack or a Queue"""
@@ -75,7 +75,7 @@ def direction(old, new):
 
 
 def way_roy(routing, start, end):
-    """Return the route from the start to the end as a list for the Roy-Warshall algorithm"""  
+    """Return the route from the start to the end as a list for the Roy-Warshall algorithm"""
     route = []
     current_node = start
     while current_node != end:
@@ -85,12 +85,13 @@ def way_roy(routing, start, end):
     return route
 
 def way_width(routing, start, end):
-    """Return the route from the start to the end as a list"""  
+    """Return the route from the start to the end as a list"""
     route = []
     current_node = end
     while current_node != start:
         route.insert(0, current_node)
         current_node = routing[current_node]  # Follow the fathers
+
     return route
 
 def filledStack(mazeMap):
@@ -113,9 +114,9 @@ def create_distances_routing_roy(mazeMap):
         for j in mazeMap[i]:
             dist[i][j[0]] = j[1]
             route[i][j[0]] = j[0]
-        route[i][i]=i
-        dist[i][i]= float("inf")
-    return dist, route    
+        route[i][i] = i
+        dist[i][i] = float("inf")
+    return dist, route
 
 
 
