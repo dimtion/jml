@@ -40,25 +40,20 @@ def exhaustive(left, node, path, weight, coins_graph):
 
 
 def determineNextMove(player_location, opponentLocation, coins):
-    global route, currentcoin, meta_route, best_weight, best_path
-
-    if currentcoin not in coins:
+    global route, currentcoin, meta_route, best_weight, best_path, coins_to_search
+    if currentcoin == player_location or opponentLocation in coins_to_search:
         dists_matrix, routes_matrix = u.update_dists_from_each(dist_matrix, route_matrix, player_location, mazeMap, coins)
-        coins_to_search = get_n_shortest(7, coins, player_location, dist_matrix)
-		
+        coins_to_search = get_n_shortest(4, coins, player_location, dist_matrix)
         best_weight = float("inf")
         best_path = []
-
         exhaustive(coins_to_search, player_location, [], 0, dist_matrix)
         meta_route = [player_location]+best_path
-        api.debug(player_location)
         route = u.location_list_to_route(meta_route, route_matrix)
-        api.debug(meta_route)
-        api.debug(route)
         currentcoin = meta_route[1]
 
     return u.direction(player_location, route.pop(0))
 
 dist_matrix, route_matrix = u.dists_from_each(coins + [playerLocation], mazeMap)
+coins_to_search = [opponentLocation]
 
 api.startGameMainLoop(determineNextMove)
