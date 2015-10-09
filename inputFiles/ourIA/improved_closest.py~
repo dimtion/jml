@@ -50,12 +50,12 @@ def determineNextMove(player_location, opponentLocation, coins):
         best_path = []
 
         exhaustive(coins_to_search, player_location, [], 0, dist_matrix)
-        meta_route = [player_location]+best_path
+        meta_route = best_path
         api.debug(player_location)
-        route = u.location_list_to_route(meta_route, route_matrix)
+        route = u.location_list_to_route(meta_route, route_matrix, player_location)
         api.debug(meta_route)
         api.debug(route)
-        currentcoin = meta_route[1]
+        currentcoin = meta_route[0]
 
     return u.direction(player_location, route.pop(0))
 
