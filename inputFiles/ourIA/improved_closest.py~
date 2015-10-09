@@ -3,6 +3,7 @@
 
 import interface as api
 import utils as u
+import algorithms as algo
 
 IAName = "Improved closest"
 (mazeWidth, mazeHeight, mazeMap, preparationTime, turnTime, playerLocation, opponentLocation, coins, gameIsOver) = api.initGame(IAName)
@@ -43,7 +44,14 @@ def determineNextMove(player_location, opponentLocation, coins):
     global route, currentcoin, meta_route, best_weight, best_path, coins_to_search
     if currentcoin == player_location or opponentLocation in coins_to_search:
         dists_matrix, routes_matrix = u.update_dists_from_each(dist_matrix, route_matrix, player_location, mazeMap, coins)
-        coins_to_search = get_n_shortest(4, coins, player_location, dist_matrix)
+        coins_to_search = get_n_shortest(7, coins, player_location, dist_matrix)
+        ennemy_dists = algo.dijkstra(mazeMap, opponentLocation)
+        may_be_lost_coins = []
+        for c in coins_to_search:
+            if len(coins_to_search) >= 2 and ennemy_dists[1][c] < dists_matrix[player_location][c]:
+                may_be_lost_coins.append(c)
+        if len(may_be_lost_coins) != 0:
+            coins_to_search.remove(may_be_lost_coins[0])    
         best_weight = float("inf")
         best_path = []
         exhaustive(coins_to_search, player_location, [], 0, dist_matrix)
