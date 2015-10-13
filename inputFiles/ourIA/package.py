@@ -3,11 +3,12 @@
 
 import utils as u
 import algorithms as algo
-import interface
+import interface as api
+import statistics as stats
 
 IAName = "package"
 
-(mazeWidth, mazeHeight, mazeMap, preparationTime, turnTime, playerLocation, opponentLocation, coins, gameIsOver) = interface.initGame(IAName)
+(mazeWidth, mazeHeight, mazeMap, preparationTime, turnTime, playerLocation, opponentLocation, coins, gameIsOver) = api.initGame(IAName)
 
 
 best_weight = float("inf")
@@ -32,12 +33,13 @@ def exhaustive(left, node, path, weight, coins_graph):
 
 def fill_packages(coins):
     """fill packages, also create the route table from any coin to any coin """
-    global packages, route_table
+    global packages, route_table, dists
     used = []
-    route_table = u.coins_graph(mazeMap, coins + [playerLocation])
+    dists, route_table = u.dists_from_each(coins+[playerLocation], mazeMap)
+    sd = stats.pstdev(d for di in dists for d in di)
     for c in coins:
         for k in coins:
-            if route_table[1][c][k] < 8 and k not in used and c not in used and k != c:
+            if dists[c][k] < sd and k not in used and c not in used and k != c:
                 used.append(c)
                 used.append(k)
                 packages[c] = [c]
@@ -45,7 +47,9 @@ def fill_packages(coins):
     for c in coins:
         if c not in used:
             packages[c] = [c]
-    
+    packages = [packages[p] for p in packages]
+    packages = sorted(packages, key=lambda x: len(x)/dists[playerLocation][x[0]])
+    api.debug(packages)
                 
 
 def mini_pack(packs):
@@ -69,54 +73,39 @@ def sorted_pack():
             packages[i_m],packages[i] = packages[i],packages[i_m]
   
 
-  
+
+    
     
 
 
 def initialisationTurn(mazeWidth, mazeHeight, mazeMap, preparationTime, turnTime, playerLocation, opponentLocation, coins) :
     """Function called once at the begining of the game"""
-    global route_table, packages, best_weight, best_path
+    global route_table, packages, best_weight, best_path, route
     fill_packages(coins)
-    sorted_pack()
-    routes = {}
-    dists = {}
-    routes[playerLocation] = route_table[0][playerLocation]
-    dists[playerLocation] = route_table[1][playerLocation]
-    for i in packages[0]:
-        routes[i] = route_table[0][i]
-        dists[i] = route_table[1][i]
-        coinDist = (routes, dists)
-    exhaustive(packages[0], playerLocation, [], 0, coinDist)
-    interface.debug(best_path)
-
+    
+    
+    #for i in packages[0]:
+        #routes[i] = route_table[0][i]
+       # dists[i] = route_table[1][i]
+        #coinDist = (routes, dists)
+    current_package = packages.pop(0)
+    exhaustive(current_package, playerLocation, [], 0, (route_table,dists))
+    api.debug(best_path)
 
 def determineNextMove(playerLocation, opponentLocation, coins):
     """Function called at each turn, must return the next move of the player"""
-    global packages, route_table, best_path, best_weight
-    for i in route_table[1][playerLocation]:
-        if route_table[1][playerLocation][i]< 4:
-            return u.direction(playerLocation, route_table[0][playerLocation][i][0])
+    global packages, route_table, best_path, best_weight, route
     if len(best_path) == 0:
-        routes = {}
-        dists = {}
-        best_weight = float("inf")
-        routes[playerLocation] = route_table[0][playerLocation]
-        dists[playerLocation] = route_table[1][playerLocation]
-        packages = packages[1:]
-        interface.debug(packages)
-        if playerLocation in packages[0]:
-            packages[0].remove(playerLocation)
-        for i in packages[0]:
-            routes[i] = route_table[0][i]
-            dists[i] = route_table[1][i]
-        coinDist = (routes, dists)
-        exhaustive(packages[0], playerLocation, [], 0, coinDist)
-        interface.debug(best_path)
-    return u.direction(playerLocation, best_path.pop(0))
+        current_package = packages.pop(0)
+        exhaustive(current_package, playerLocation, [], 0, (route_table,dists))
+        api.debug(best_path)
+    return u.direction(playerLocation, best_path.pop(0))    
+
+    
 
 # Init our AI
 initialisationTurn(mazeWidth, mazeHeight, mazeMap, preparationTime, turnTime, playerLocation, opponentLocation, coins)
 
 # Starts the game
-interface.startGameMainLoop(determineNextMove)
+api.startGameMainLoop(determineNextMove)
                    

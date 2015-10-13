@@ -76,11 +76,8 @@ def debug (text) :
 
 def readFromPipe():
     # Reads from the stdin channel and returns the structure associated to the string
-    try:
-        text = sys.stdin.readline()
-        return ast.literal_eval(text.strip())
-    except:
-        os._exit(-1)
+    text = sys.stdin.readline()
+    return ast.literal_eval(text.strip())
 
 ####################################################################################################################################################################################################################################
 
@@ -147,7 +144,7 @@ def get_pid_en(name):
 def initializationCode (mazeWidth, mazeHeight, mazeMap, timeAllowed, playerLocation, opponentLocation, coins) :
 
     # [YOUR CODE HERE]
-    pid = get_pid_en("demoAI")
+    pid = get_pid_en("python3")
     debug(pid)
 
     for p in pid:
@@ -178,7 +175,7 @@ def determineNextMove(mazeWidth, mazeHeight, mazeMap, timeAllowed, playerLocatio
 
     # [EXAMPLE] Goes up all the time
     directions = [UP, DOWN, LEFT, RIGHT]
-    return directions[random.randint(0, 3)]
+    return 'Y'  # directions[random.randint(0, 3)]
 
 ####################################################################################################################################################################################################################################
 ############################################################################################################# MAIN LOOP ############################################################################################################

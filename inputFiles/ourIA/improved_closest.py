@@ -43,7 +43,7 @@ def determineNextMove(player_location, opponentLocation, coins):
     global route, currentcoin, meta_route, best_weight, best_path, coins_to_search
     if currentcoin == player_location or opponentLocation in coins_to_search:
         dists_matrix, routes_matrix = u.update_dists_from_each(dist_matrix, route_matrix, player_location, mazeMap, coins)
-        coins_to_search = get_n_shortest(4, coins, player_location, dist_matrix)
+        coins_to_search = get_n_shortest(2, coins, player_location, dist_matrix)
         best_weight = float("inf")
         best_path = []
         exhaustive(coins_to_search, player_location, [], 0, dist_matrix)
