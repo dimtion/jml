@@ -4,7 +4,7 @@
 import utils as u
 import algorithms as algo
 import interface as api
-#import statistics as stats
+import statistics as stats
 
 IAName = "package"
 
@@ -53,7 +53,7 @@ def fill_packages(coins):
     packages = sorted(packages, key=lambda x: len(x)/dists[playerLocation][x[0]])
     api.debug(packages)
                 
-    
+
 def mini_pack(packs):
     """used in sorted_pack to sort packages"""
     m = packs[0]

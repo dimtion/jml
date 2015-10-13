@@ -44,6 +44,7 @@ def determineNextMove(player_location, opponentLocation, coins):
     global route, currentcoin, meta_route, best_weight, best_path, coins_to_search
     if currentcoin == player_location or opponentLocation in coins_to_search:
         dists_matrix, routes_matrix = u.update_dists_from_each(dist_matrix, route_matrix, player_location, mazeMap, coins)
+<<<<<<< HEAD
         coins_to_search = get_n_shortest(3, coins, player_location, dist_matrix)
         ennemy_dists = algo.dijkstra(mazeMap, opponentLocation)
         may_be_lost_coins = []
@@ -52,6 +53,9 @@ def determineNextMove(player_location, opponentLocation, coins):
                 may_be_lost_coins.append(c)
         if len(may_be_lost_coins) != 0:
             coins_to_search.remove(may_be_lost_coins[0])    
+=======
+        coins_to_search = get_n_shortest(2, coins, player_location, dist_matrix)
+>>>>>>> bd63da4adad63d55f72a0917276a528fe82eb40c
         best_weight = float("inf")
         best_path = []
         exhaustive(coins_to_search, player_location, [], 0, dist_matrix)

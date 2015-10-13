@@ -16,7 +16,7 @@ import os
 # Channels stdout and stdin are captured to enable communication with the maze
 # Do not edit this code
 
-def debug (text) :
+def debug(text):
     
     # Writes to the stderr channel
     sys.stderr.write(str(text) + "\n")
@@ -29,13 +29,13 @@ def debug (text) :
 # The received information is automatically converted to the correct type
 # Do not edit this code
 
-def readFromPipe () :
+def readFromPipe():
     
     # Reads from the stdin channel and returns the structure associated to the string
-    try :
+    try:
         text = sys.stdin.readline()
         return ast.literal_eval(text.strip())
-    except :
+    except:
         os._exit(-1)
 
 ##################################################################################################################
