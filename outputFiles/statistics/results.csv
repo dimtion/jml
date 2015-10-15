@@ -1,0 +1,6 @@
+Density;ourIA/closest.py (moves);ourIA/closest.py (missed);ourIA/closest.py (time);ourIA/improved_closest.py (moves);ourIA/improved_closest.py (missed);ourIA/improved_closest.py (time);ourIA/improved_closest_v2.py (moves);ourIA/improved_closest_v2.py (missed);ourIA/improved_closest_v2.py (time)
+0.6;16;0;0.0433024168015;0;0;0;16;0;0.049156665802
+0.7;16;0;0.0485432624817;0;0;0;16;0;0.0487607479095
+0.8;16;0;0.0484018802643;0;0;0;17;0;0.0515593290329
+0.9;17;0;0.0504381895065;0;0;0;17;0;0.0489319801331
+1.0;19;0;0.0495935201645;0;0;0;20;0;0.04663875103
