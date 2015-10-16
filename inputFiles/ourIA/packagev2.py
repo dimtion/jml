@@ -4,9 +4,10 @@
 import utils as u
 import algorithms as algo
 import interface as api
+import math 
 #import statistics as stats
 
-IAName = "package"
+IAName = "packagev2"
 
 (mazeWidth, mazeHeight, mazeMap, preparationTime, turnTime, playerLocation, opponentLocation, coins, gameIsOver) = api.initGame(IAName)
 
@@ -55,9 +56,24 @@ def fill_packages(coins,mazeMap):
                     visited.append(c)
                     
     packages = [packages[p] for p in packages]
-    
-    packages = list(reversed(sorted(packages, key=lambda x: len(x)/dists[playerLocation][x[0]])))
-                
+    packages = list(reversed(sorted(packages, key=lambda x: len(x)/math.sqrt(dists[playerLocation][x[0]]))))
+    for k in range(len(packages)):
+        n = len(packages[k])
+        if n > 5:
+            p1 = packages[k][:n//2]
+            p2 = packages[k][n//2:]
+            if len(p1)> 5:
+                p1prime = p1[:len(p1)//2]
+                p1sec = p1[len(p1)//2:]
+                p2prime = p2[:len(p2)//2]
+                p2sec = p2[len(p2)//2:]
+                packages[k] = p1prime
+                packages.insert(k+1,p1sec)
+                packages.insert(k+2,p2prime)
+                packages.insert(k+3,p2sec)   
+            else:
+                packages[k] = p1
+                packages.insert(k+1,p2)            
   
 
 def find_opponent(packages,opponentLocation):
@@ -76,9 +92,9 @@ def initialisationTurn(mazeWidth, mazeHeight, mazeMap, preparationTime, turnTime
     global route_table, packages, best_weight, best_path, current_package
     fill_packages(coins,mazeMap)
     current_package = packages.pop(0)
+    api.debug(current_package)
     exhaustive(current_package, playerLocation, [], 0, (route_table,dists))
-    api.debug(best_path)
-    api.debug(packages)
+
 
 def determineNextMove(playerLocation, opponentLocation, coins):
     """Function called at each turn, must return the next move of the player"""
@@ -88,20 +104,30 @@ def determineNextMove(playerLocation, opponentLocation, coins):
     i1,i2 = find_opponent(packages, opponentLocation)
     if i1 >= 0:
         packages[i1].remove(packages[i1][i2])
+    if len(packages[i1]) == 0:
+        packages.remove(packages[i1])
+        
                     
     if opponentLocation in current_package:
-        dists, routes_table = u.update_dists_from_each(dists, route_table, player_location, mazeMap, coins)
-        current_package.remove(opponentLocation)
+        dists, routes_table = u.update_dists_from_each(dists, route_table, playerLocation, mazeMap, coins)
+        if len(current_package) > 1:
+            current_package.remove(opponentLocation)
+        else:
+            current_package = packages.pop(0)
         best_weight = float("inf")
         best_path = []
+        api.debug(current_package)
         exhaustive(current_package, playerLocation, [], 0, (route_table,dists))
+      
         
     if len(best_path) == 0:
         best_weight = float("inf")
         best_path = []
         current_package = packages.pop(0)
+        api.debug(current_package)
         exhaustive(current_package, playerLocation, [], 0, (route_table,dists))
-        #api.debug(best_path)
+        api.debug(best_path)
+    api.debug(packages)
     return u.direction(playerLocation, best_path.pop(0))    
 
     
