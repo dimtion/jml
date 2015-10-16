@@ -26,7 +26,7 @@ best_weight = float("inf")
 best_path = []
 
 def exhaustive(left, node, path, weight, coins_graph):
-    """Fill best_path with the best coin sequence to get all the coins in a minimal time"""
+    """Fill best_path with the best COIN SEQUENCE to get all the coins in a minimal time"""
     global best_weight, best_path
 
     if len(left) == 0:
@@ -48,7 +48,7 @@ def determineNextMove(player_location, opponentLocation, coins):
     #the second test prevents the player from going to coins which have been taken by the opponent
     if currentcoin == player_location or opponentLocation in coins_to_search:
         dists_matrix, routes_matrix = u.update_dists_from_each(dist_matrix, route_matrix, player_location, mazeMap, coins)
-<<<<<<< HEAD
+
         coins_to_search = get_n_shortest(3, coins, player_location, dist_matrix)
         ennemy_dists = algo.dijkstra(mazeMap, opponentLocation)
         may_be_lost_coins = []
@@ -57,10 +57,8 @@ def determineNextMove(player_location, opponentLocation, coins):
             if len(coins_to_search) >= 2 and ennemy_dists[1][c] < dists_matrix[player_location][c]:
                 may_be_lost_coins.append(c)
         if len(may_be_lost_coins) != 0:
-            coins_to_search.remove(may_be_lost_coins[0])    
-=======
-        coins_to_search = get_n_shortest(2, coins, player_location, dist_matrix)
->>>>>>> bd63da4adad63d55f72a0917276a528fe82eb40c
+            coins_to_search.remove(may_be_lost_coins[0]) 
+   
         best_weight = float("inf")
         best_path = []
         exhaustive(coins_to_search, player_location, [], 0, dist_matrix)

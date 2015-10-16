@@ -9,7 +9,7 @@ IAName = "Improved closest v2"
 (mazeWidth, mazeHeight, mazeMap, preparationTime, turnTime, playerLocation, opponentLocation, coins, gameIsOver) = api.initGame(IAName)
 coinsNumber = len(coins) + 1
 route = []
-
+mazeMap[(-1,-1)] = ()
 best_weight = float("inf")
 best_path = []
 currentcoin = playerLocation
@@ -107,8 +107,7 @@ def change_way(coins, opponentLocation, player_location):
     meta_route = [player_location] + best_path
     api.debug(meta_route)
     route = u.location_list_to_route(meta_route, route_matrix)
-    
-            
+          
     return coins_to_search, meta_route, route, dist_matrix[player_location][meta_route[1]]
  
                

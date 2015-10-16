@@ -10,7 +10,7 @@ IAName = "closest"
 
 (mazeWidth, mazeHeight, mazeMap, preparationTime, turnTime, playerLocation, opponentLocation, coins, gameIsOver) = interface.initGame(IAName)
 route = []
-
+mazeMap[(-1,-1)] = ()
 def next_way(playerLocation, coins):
     candidates = algo.dijkstra(mazeMap, playerLocation)
     dist = float("inf")

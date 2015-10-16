@@ -107,8 +107,7 @@ def change_way(coins, opponentLocation, player_location):
     meta_route = [player_location] + best_path
     api.debug(meta_route)
     route = u.location_list_to_route(meta_route, route_matrix)
-    api.debug(route)
-            
+          
     return coins_to_search, meta_route, route, dist_matrix[player_location][meta_route[1]]
  
                

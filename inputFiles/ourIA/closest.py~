@@ -36,9 +36,7 @@ def determineNextMove(playerLocation, opponentLocation, coins):
     else: 
         ennemy_dists = algo.dijkstra(mazeMap, opponentLocation)
         if ennemy_dists[1][route[-1]] < len(route):
-            new_coins = coins[:]
-            new_coins.remove(route[-1])
-            route = next_way(playerLocation, new_coins)
+            route = next_way(playerLocation, coins)
     next_pos = route.pop(0)
     return u.direction(playerLocation, next_pos)
 
