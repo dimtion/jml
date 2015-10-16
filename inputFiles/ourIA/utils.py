@@ -148,6 +148,7 @@ def dists_from_each(locations, maze_map):
 
 
 def update_dists_from_each(dists_matrix, routes_matrix, new_location, maze_map, coins):
+    """Update dists_matrix, routes_matrix taking into account the player_location"""
     routing_table, dists_table = algo.dijkstra(maze_map, new_location)
     dists_matrix[new_location] = {}
     routes_matrix[new_location] = {}

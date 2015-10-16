@@ -17,7 +17,6 @@ packages = {}
 route_table = {}
 
 def exhaustive(left, node, path, weight, coins_graph):
-    """Fill best_path with the ROUTE to get all the coins in a minimal time"""
     global best_weight, best_path
     
     if len(left) == 0:

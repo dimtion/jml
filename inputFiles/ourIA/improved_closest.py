@@ -16,6 +16,7 @@ currentcoin = playerLocation
 
 
 def get_n_shortest(n, coins, playerLocation, dist_matrix):
+    """Return the n closest coins to the player location"""
     new_coins = coins[:]
     new_coins = sorted(new_coins, key=lambda x: dist_matrix[playerLocation][x])
     return new_coins[:n]
@@ -25,6 +26,7 @@ best_weight = float("inf")
 best_path = []
 
 def exhaustive(left, node, path, weight, coins_graph):
+    """Fill best_path with the best COIN SEQUENCE to get all the coins in a minimal time"""
     global best_weight, best_path
 
     if len(left) == 0:
@@ -41,13 +43,16 @@ def exhaustive(left, node, path, weight, coins_graph):
 
 
 def determineNextMove(player_location, opponentLocation, coins):
+    """Return the next direction"""
     global route, currentcoin, meta_route, best_weight, best_path, coins_to_search
+    #the second test prevents the player from going to coins which have been taken by the opponent
     if currentcoin == player_location or opponentLocation in coins_to_search:
         dists_matrix, routes_matrix = u.update_dists_from_each(dist_matrix, route_matrix, player_location, mazeMap, coins)
 <<<<<<< HEAD
         coins_to_search = get_n_shortest(3, coins, player_location, dist_matrix)
         ennemy_dists = algo.dijkstra(mazeMap, opponentLocation)
         may_be_lost_coins = []
+        # Remove from coins_to_search the first coin which is closer to the opponent than to the player
         for c in coins_to_search:
             if len(coins_to_search) >= 2 and ennemy_dists[1][c] < dists_matrix[player_location][c]:
                 may_be_lost_coins.append(c)

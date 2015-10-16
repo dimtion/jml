@@ -17,6 +17,7 @@ packages = {}
 route_table = {}
 
 def exhaustive(left, node, path, weight, coins_graph):
+    """Fill best_path with the ROUTE to get all the coins in a minimal time"""
     global best_weight, best_path
     
     if len(left) == 0:
@@ -32,13 +33,12 @@ def exhaustive(left, node, path, weight, coins_graph):
             exhaustive(new_left, i, path + coins_graph[0][node][i], weight + coins_graph[1][node][i], coins_graph)
 
 def fill_packages(coins):
-    """fill packages, also create the route table from any coin to any coin """
+    """Fill packages, also create the route table from any coin to any coin """
     global packages, route_table, dists
     used = []
     dists, route_table = u.dists_from_each(coins+[playerLocation], mazeMap)
     dists_list = sorted([d for di in dists for d in di])
     quart_dist = dists_list[len(dists_list)//4]
-    #sd = stats.pstdev(d for di in dists for d in di)
     for c in coins:
         for k in coins:
             if dists[c][k] < quart_dist and k not in used and c not in used and k != c:
@@ -53,32 +53,6 @@ def fill_packages(coins):
     packages = sorted(packages, key=lambda x: len(x)/dists[playerLocation][x[0]])
     api.debug(packages)
                 
-    
-def mini_pack(packs):
-    """used in sorted_pack to sort packages"""
-    m = packs[0]
-    i = 0
-    for k in range(1, len(packs)):
-        if len(packs[k])< len(m):
-            m = packs[k]
-            i = k
-    return [m, i]
-
-def sorted_pack():
-    """Transform packages in a list and sort it by size of package"""
-    global packages
-    packages = [packages[p] for p in packages]
-    n=len(packages)
-    for i in range(n-1,0,-1):
-        i_m = mini_pack(packages[:i+1])[1]
-        if i_m != i:
-            packages[i_m],packages[i] = packages[i],packages[i_m]
-  
-
-
-    
-    
-
 
 def initialisationTurn(mazeWidth, mazeHeight, mazeMap, preparationTime, turnTime, playerLocation, opponentLocation, coins) :
     """Function called once at the begining of the game"""
