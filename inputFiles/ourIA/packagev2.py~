@@ -59,7 +59,7 @@ def fill_packages(coins, mazeMap):
                     visited.append(c)
                     
     packages = [packages[p] for p in packages]
-    packages = list(reversed(sorted(packages, key=lambda x: (len(x))/min([dists[playerLocation][c] for c in x]))))
+    packages = list(reversed(sorted(packages, key=lambda x: (len(x)+3)/min([dists[playerLocation][c] for c in x]))))
     for k in range(len(packages)):
         n = len(packages[k])
         if n > 5:
@@ -88,7 +88,7 @@ def find_players(packages, opponentLocation, playerLocation):
                 if opponentLocation == packages[i][k]:
                     i1, i2 = i, k
                     acc = acc +1
-                elif playerLocation == packages[i][k]:
+                elif playerLocation == packages[i][k] and playerLocation != opponentLocation:
                     j1, j2 = i, k
                     acc = acc +1
                 if acc > 1:
@@ -116,7 +116,7 @@ def determineNextMove(playerLocation, opponentLocation, coins):
         packages[i1].remove(packages[i1][i2])
         if len(packages[i1]) == 0:
             packages.remove(packages[i1])
-    if j1 >= 0 and opponentLocation != playerLocation:
+    if j1 >= 0:
         packages[j1].remove(packages[j1][j2])
         if len(packages[j1]) == 0:
             packages.remove(packages[j1])
@@ -132,7 +132,7 @@ def determineNextMove(playerLocation, opponentLocation, coins):
         exhaustive(current_package, playerLocation, [], 0, (route_table, dists))
            
     if len(best_path) == 0:
-        packages = list(reversed(sorted(packages, key=lambda x: (len(x))/min([dists[playerLocation][c] for c in x]))))
+        packages = list(reversed(sorted(packages, key=lambda x: (len(x)+3)/min([dists[playerLocation][c] for c in x]))))
         best_weight = float("inf")
         best_path = []
         current_package = packages.pop(0)
