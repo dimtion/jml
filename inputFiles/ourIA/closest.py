@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import interface
-import utils as u
-import algorithms as algo
+import lib.interface as interface
+import lib.utils as u
+import lib.algorithms as algo
 
 
 IAName = "closest"

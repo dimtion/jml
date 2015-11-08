@@ -14,9 +14,9 @@ import os
 ####################################################################################################################################################################################################################################
 ########################################################################################################### YOUR IMPORTS ###########################################################################################################
 ####################################################################################################################################################################################################################################
+import time
+import heapq
 
-# [YOUR CODE HERE]
-from queue import Queue
 ####################################################################################################################################################################################################################################
 ####################################################################################################### PRE-DEFINED CONSTANTS ######################################################################################################
 ####################################################################################################################################################################################################################################
@@ -36,19 +36,47 @@ RIGHT = 'R'
 # It will be displayed in the maze
 # You have to edit this code
 
-TEAM_NAME = "Your name here"
+TEAM_NAME = "Nanananananana BATMAN"
 
 ####################################################################################################################################################################################################################################
 ########################################################################################################## YOUR CONSTANTS ##########################################################################################################
 ####################################################################################################################################################################################################################################
 
-
+OPTIMINITCOINNUMBER = 4
+OPTIMTURNCOINNUMBER = 3
 
 ####################################################################################################################################################################################################################################
 ########################################################################################################## YOUR VARIABLES ##########################################################################################################
 ####################################################################################################################################################################################################################################
 
-route = []
+largeurLabyrinthe =0
+directionList = []
+aimedCoins = []
+
+class R_barre:
+    def __init__(self,num):
+        self.num = num
+    
+    def __add__(self,valueToAdd):
+        if self.num == -1 or valueToAdd.num==-1:
+            return R_barre(-1)
+        else :
+            return R_barre(self.num + valueToAdd.num)
+    
+    def lowerThan(self,valueToCompare):
+        if self.num == -1 and valueToCompare.num == -1:
+            return False
+        elif self.num == -1:
+            return False
+        elif valueToCompare.num == -1:
+            return True
+        else:
+            a = self.num
+            b =valueToCompare.num
+            if a < b:
+                return True
+            else:
+                return False
 
 ####################################################################################################################################################################################################################################
 ####################################################################################################### PRE-DEFINED FUNCTIONS ######################################################################################################
@@ -117,8 +145,7 @@ def processInitialInformation () :
 # The maze map and allowed times are no longer provided since they do not change
 # Do not edit this code
 
-
-def processNextInformation():
+def processNextInformation () :
 
     # We read from the pipe
     data = readFromPipe()
@@ -128,93 +155,207 @@ def processNextInformation():
 ########################################################################################################## YOUR FUNCTIONS ##########################################################################################################
 ####################################################################################################################################################################################################################################
 
+def pos_to_int(position):
+    global largeurLabyrinthe
+    mazeWidth = largeurLabyrinthe
+    return position[0] + mazeWidth * position[1]
 
-class StackQueue(list):
-    def __init__(self, isStack=True):
-        self.isStack = isStack
-
-    def pop(self):
-        if self.isStack:
-            return super().pop()
-        else:
-            return super().pop(0)
-
-
-class Tas_min(dict):
-    def add(self, elt, poids):
-        self[elt] = poids
-
-    def remove(self):
-        mini = min(j for i, j in self.items())
-        key_mini = next(key for key, value in self.items() if value == mini)
-        del self[key_mini]
-        return key_mini, mini
-
-    def empty(self):
-        return len(self) == 0
+def int_to_pos(integer):
+    global largeurLabyrinthe
+    mazeWidth = largeurLabyrinthe
+    return (integer%mazeWidth,integer//mazeWidth)
 
 
-def filled_tas(mazeMap):
-    tas = Tas_min()
-    for node in mazeMap:
-        tas.add(node, float("inf"))
-    return tas
+#Parcours d'un graphe en largeur, en profondeur, profondeur limitée
 
-
-def create_distances_routing(mazeMap):
-    dist = {}
-    route = {}
-    for i in mazeMap:
-        dist[i] = {k: float("inf") for k in mazeMap}
-        route[i] = {k: (-1, -1) for k in mazeMap}
-        for j in mazeMap[i]:
-            dist[i][j[0]] = j[1]
-            route[i][j[0]] = j[0]
-    return dist, route
-
-
-def search(mazeMap):
-    """ Return the routing table from any point to any point"""
-    distances, routing = create_distances_routing(mazeMap)
-    for k in mazeMap:
-        for i in mazeMap:
-            for j in mazeMap:
-                alt_distance = distances[i][k] + distances[k][j]
-                if alt_distance < distances[i][j]:
-                    distances[i][j] = alt_distance
-                    routing[i][j] = routing[i][k]
-    return routing
-
-
-def way(routing, start, end):
-    """Return the route from the start to the end as a list"""
-    route = []
-    current_node = start
-    # debug(routing)
-    while current_node != end:
-        route.append(current_node)
-        current_node = routing[current_node][end]
-    route.append(end)
-    debug(route)
-    return route
-
-
-def direction(old, new):
-    """ Return the direction to move from the old location to the new location"""
-    if new[0] - old[0] == -1:
-        return UP
-    elif new[0] - old[0] == 1:
+def adjacentWay(previousLocation,nextLocation):
+    #risque echange verti et hori
+    vertical = nextLocation[0] - previousLocation[0]
+    horizontal = nextLocation[1] - previousLocation[1]
+    
+    if vertical == 1:
         return DOWN
-    elif new[1] - old[1] == -1:
-        return LEFT
-    elif new[1] - old[1] == 1:
+    elif vertical == -1:
+        return UP
+    elif horizontal== 1:
         return RIGHT
-    else:
-        debug("Error :")
-        debug(new)
-        debug(old)
-        return None
+    else :
+        return LEFT
+    
 
+# Dijkstra prend en entrée un nœud initial et un graphe
+# Sa sortie est l'ensemble des longueurs des chemins les plus courts
+# depuis le nœud initial à tous les autres nœuds atteignables dans le graphe
+def dijkstra(noeud_initial, graphe):
+    
+    routage = [0]*len(graphe)
+
+    # On défini d'abord les structures de données utiles
+    # distances est le tableau rendu en fin d'algorithme qui contient toutes 
+    # les longueurs des chemins minimaux depuis le noeud initial
+    infini = R_barre(-1)
+    distances = [infini] * len(graphe)
+    indice_noeud_initial = pos_to_int(noeud_initial)
+    distances[indice_noeud_initial] = R_barre(0)
+    
+    # L'algorithme de Dijkstra utilise une file de priorité, elle contient
+    # initialement le nœud initial avec sa distance au nœud initial : 0
+    filePriorite = []
+    heapq.heappush(filePriorite, (0,noeud_initial) )
+
+    # Corps de l'algorithme :
+    while not filePriorite == [] :
+        (distance , noeud_courant) = heapq.heappop(filePriorite)
+        #pour tout noeud i voisin de noeud_courant:
+        for voisin in graphe[noeud_courant]:
+            dist_par_courant = R_barre(distance + voisin[1])
+            #i est le numero correspondant aux coordonnées du voisin 
+            i = pos_to_int(voisin[0])
+            if dist_par_courant.lowerThan(distances[i]):
+                #debug(str(voisin))
+                distances[i] = dist_par_courant
+                routage[i] = noeud_courant
+                heapq.heappush(filePriorite, (dist_par_courant.num,voisin[0]) )
+        #debug(str(filePriorite))
+                
+
+    # Il nous reste à rendre le résultat 
+    return distances,routage,noeud_initial
+    
+
+def chooseNearestCoin(matrDist):
+    liste = []
+    nearcoin=coins[0]
+    for coordCoin in coins: #on récup la distances des pièces
+        i = pos_to_int(coordCoin)
+        liste.append(matrDist[i].num)
+
+    for j in range(len(liste)):#on cherche le plus proche
+        distancemini= matrDist[pos_to_int(nearcoin)].num
+        if liste[j] < distancemini:
+            nearcoin=coins[j]
+    return nearcoin
+
+
+#à partir d'un routage, du noeud d'arrivé visé, donne toutes les cases rencontrées en chemin
+def pathTracer(finishingNode,startingNode, routage):
+    path = []
+    path.append(finishingNode)
+    #debug(str(coins[0]))
+    while not path[-1] == startingNode:
+        indice_currentNode = pos_to_int(path[-1])
+        parent = routage[indice_currentNode]
+        path.append(parent)
+    #debug("3\n\n" + str(path)+"\n\n")
+    return path
+  
+
+def directionMaker(pathList):
+    directions = []
+    while not len(pathList) == 1:
+        actualLocation = pathList.pop()
+        nextLocation = pathList[-1]
+        nextdirection = adjacentWay(actualLocation, nextLocation)
+        directions.append(nextdirection)
+    #debug(str(directions))
+    return directions
+
+
+def wayToAllCoins(playerLocation, graphe):
+    wayToCoins = []
+    (matriceDistances, matriceRoutage, noeudDepart) = dijkstra(playerLocation,mazeMap)
+    for aim in coins:
+        pathSolution = pathTracer(aim,playerLocation,matriceRoutage)
+        decisionList = directionMaker(pathSolution)
+        wayToCoins.append(decisionList)
+    return wayToCoins
+
+
+def choixvoyageur(choix,dist_totale,nombrePieceAPrendre, distcoin, longueurmini, meilleurchemin ):
+    
+    if len(choix) >= nombrePieceAPrendre:
+        if dist_totale < longueurmini:
+            longueurmini = dist_totale
+            meilleurchemin = choix
+
+    else:
+        for j in range(len(coins)):
+            if j not in choix:
+                nouveauchoix, longueur = choixvoyageur(choix + [j],dist_totale + distcoin[choix[-1]][j], nombrePieceAPrendre, distcoin, longueurmini, meilleurchemin)
+                if longueur < longueurmini:
+                    longueurmini = longueur
+                    meilleurchemin = nouveauchoix
+
+    return meilleurchemin, longueurmini #renvoie le dernier chemin
+
+
+def voyageurcommerce(nombrePlacesAVisiter):
+    distcoin = []
+    longueurmini = float('inf')
+    meilleurchemin = []    
+    decisionList = []
+    
+    #on vérifie qu'il reste assez de place pour executer le voyageur de commerce
+    nombrePlacesAVisiter = min(len(coins), nombrePlacesAVisiter)    
+    
+    #initialisation distcoin
+    distcoin = []
+    for j in range(len(coins)+1):
+        distcoin.append([])
+        for i in range(len(coins)+1):
+            distcoin[j].append(float("inf"))
+    
+    #calcul des valeurs de distcoin
+    for j in range(len(coins)):
+        (matriceDistances, matriceRoutage, noeudDepart) = dijkstra(coins[j],mazeMap)
+        for i in range(0,len(coins)):
+            dist = matriceDistances[pos_to_int(coins[i])].num
+            distcoin[j][i] = dist
+            distcoin[i][j] = dist
+        dist = matriceDistances[pos_to_int(playerLocation)].num
+        distcoin[len(coins)][j] = dist
+        distcoin[j][len(coins)] = dist
+    debug("initialisation distcoin ok")
+
+    #calcul du chemin optimal sur nombrePlacesAVisiter pièces à prendre
+    (ordrevoyage , distancetotale) = choixvoyageur([len(coins)], 0, nombrePlacesAVisiter, distcoin, longueurmini, meilleurchemin) 
+    
+    debug("miraculi\n")
+    #récupération des coordonnées des pièces à récup
+    listeCoordonnees = []
+    for j in range(len(ordrevoyage)):
+        listeCoordonnees.append(0)
+        if ordrevoyage[j] == len(coins):
+            listeCoordonnees[j] = playerLocation
+        else:
+            listeCoordonnees[j] = coins[ordrevoyage[j]]
+
+    debug(str(listeCoordonnees))
+
+    #mise à jour des cases visées
+    global aimedCoins
+    for coin in listeCoordonnees:
+        aimedCoins.append(coin)
+    aimedCoins.pop(0)
+
+    #récupération du chemin
+    for j in range(len(ordrevoyage)-1):
+        (matriceDistances, matriceRoutage, noeudDepart) = dijkstra(listeCoordonnees[j], mazeMap)
+        pathSolution = pathTracer(listeCoordonnees[j+1],listeCoordonnees[j], matriceRoutage)
+        decisionList += directionMaker(pathSolution)
+    return decisionList
+
+def chooseNextStrategy():
+    if len(coins) <= 2:
+        global aimedCoins
+        (matriceDistances, matriceRoutage, noeudDepart) = dijkstra(playerLocation,mazeMap)
+        aim = chooseNearestCoin(matriceDistances)
+        aimedCoins = [aim]
+        pathSolution = pathTracer(aim,playerLocation,matriceRoutage)
+        decisionList = directionMaker(pathSolution) 
+    else :
+        decisionList = voyageurcommerce(OPTIMTURNCOINNUMBER)
+    return decisionList
 ####################################################################################################################################################################################################################################
 
 # This is where you should write your code to do things during the initialization delay
@@ -222,12 +363,24 @@ def direction(old, new):
 # This function takes as parameters the dimensions and map of the maze, the time it is allowed for computing, the players locations in the maze and the remaining coins locations
 # Make sure to have a safety margin for the time to include processing times (communication etc.)
 
+def initializationCode (mazeWidth, mazeHeight, mazeMap, timeAllowed, playerLocation, opponentLocation, coins) :
+    global largeurLabyrinthe
+    largeurLabyrinthe = mazeWidth
+    global directionList
+    directionList = []
+    
+    initialTime = time.time()
+    directionList = voyageurcommerce(OPTIMINITCOINNUMBER)
+    debug("initial time needed to calculate : " + str((time.time() - initialTime)*1000)+ "ms" + "\nnombre de places du voyageur de commerce = " + str(OPTIMINITCOINNUMBER))
 
-def initializationCode(mazeWidth, mazeHeight, mazeMap, timeAllowed, playerLocation, opponentLocation, coins):
-    global route
-    route_table = search(mazeMap)
-    route = way(route_table, playerLocation, (0, mazeWidth - 1))
-    route.pop(0)
+    # [EXAMPLE] Prints the information to the shell
+    debug("\n" + "mazeWidth = " + str(mazeWidth) + "\n"
+               + "mazeHeight = " + str(mazeHeight) + "\n"
+               + "mazeMap = " + "hidden" + "\n"
+               + "timeAllowed = " + str(timeAllowed) + "\n"
+               + "playerLocation = " + str(playerLocation) + "\n"
+               + "opponentLocation = " + str(opponentLocation) + "\n"
+               + "coins = " + str(coins))
 
 ####################################################################################################################################################################################################################################
 
@@ -236,10 +389,27 @@ def initializationCode(mazeWidth, mazeHeight, mazeMap, timeAllowed, playerLocati
 # This function takes as parameters the dimensions and map of the maze, the time it is allowed for computing, the players locations in the maze and the remaining coins locations
 # Make sure to have a safety margin for the time to include processing times (communication etc.)
 
+def determineNextMove (mazeWidth, mazeHeight, mazeMap, timeAllowed, playerLocation, opponentLocation, coins) :
+    
+    global directionList
 
-def determineNextMove(mazeWidth, mazeHeight, mazeMap, timeAllowed, playerLocation, opponentLocation, coins):
-    next_pos = route.pop(0)
-    return direction(playerLocation, next_pos)
+    #vérifier que toutes les pièces visées sont présentes
+    global aimedCoins
+    allAimedCoinsArePresent = 1
+    for target in aimedCoins:
+        if target == playerLocation:
+            aimedCoins.remove(target)
+        elif target not in coins:
+            allAimedCoinsArePresent = 0
+    
+    #réagir si il n'y a plus rien à faire
+    if directionList == [] or not allAimedCoinsArePresent:
+        #initialTime = time.time()
+        directionList = chooseNextStrategy()
+        #debug("time needed to calculate : " + str((time.time() - initialTime)*1000)+ "ms")
+
+    return directionList.pop(0)
+
 ####################################################################################################################################################################################################################################
 ############################################################################################################# MAIN LOOP ############################################################################################################
 ####################################################################################################################################################################################################################################
@@ -267,6 +437,5 @@ if __name__ == "__main__" :
         nextMove = determineNextMove(mazeWidth, mazeHeight, mazeMap, turnTime, playerLocation, opponentLocation, coins)
         writeToPipe(nextMove)
 
-
 ####################################################################################################################################################################################################################################
-###################################################################################################################################################################################################################################
+####################################################################################################################################################################################################################################

@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import utils as u
-import algorithms as algo
-import interface as api
-import math 
+import lib.utils as u
+import lib.algorithms as algo
+import lib.interface as api
+import math
 #import statistics as stats
 
 IAName = "packagev2"
