@@ -55,3 +55,12 @@ docs/_build/
 
 # PyBuilder
 target/
+
+# Statistics
+*.csv
+
+# Other
+code/
+executables/
+outputfiles/
+outputFiles/previousGame/
