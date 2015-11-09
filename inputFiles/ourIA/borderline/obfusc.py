@@ -5,30 +5,77 @@ import codecs
 # 148 : Annulation du caractède précédant
 # 160 : espace insécable
 # 173 : trait d'union conditionnel
-dangerous_file = codecs.open("le_mechant_truc.py", "r", "utf-8-sig")
 
-# First : generate the obfuscated code :
-m = (str(bin(ord(i)))[2:] for i in dangerous_file.read())
-m = ''.join('0'*(8 - len(x)) + x for x in m)
-obfucated_code = ''.join(chr(160) if x == '0' else chr(128) for x in m)
+####### CONFIGURATION START #############
+CODE_TO_HIDE_PATH = "le_mechant_truc.py"
+SAFE_CODE_PATH = "le_truc.py"
+OUTPUT_CODE_PATH = "le_truc_final.py"
 
-safe_file = codecs.open("le_truc.py", "r", "utf-8-sig")
 
-# Aptent 1 : put everything in the first line of the safe code :
+# TOTAL_OBFS_KEYS = [i for i in range(0x80, 0x85)]
+TOTAL_OBFS_KEYS = [32, 160, 0x34f, 0xad]
+SIMPLE_OBFS_KEYS = TOTAL_OBFS_KEYS
+INDICATOR_KEY = 0x701  # Should not be in TOTAL... 
+NBR_BYTES = 4
+
+# TODO : set une_fonction to the first function
+visible_unziping_code = """
+# Convert the list of nodes to a matrix :
+graph = une_fonction.__doc__.split('\\n')[0].replace(chr(32), '0').replace(chr(160), '1').replace(chr(0x34f), '2').replace(chr(0xad), '3')
+exec(''.join(chr(int(graph[i:i+{nbr_bytes}], {base})) for i in range(0, len(graph), {nbr_bytes})))
+""".format(nbr_bytes=NBR_BYTES, base=len(SIMPLE_OBFS_KEYS))
+
+unziping_indice = "# <>"
+hidden_unziping_code = """
+import codecs as c
+oc=''
+for func in [l.split('(')[4:0] for l in c.open(__file__,"r","utf8").read() if l.startswith('def')]:
+    f=[l for l in eval(func + '.__doc__').split(chr({indicator_key}))]
+    oc+=''.join(f[i] for i in range(1,len(f),2))
+for i,e in enumerate({all_keys}): oc = oc.replace(chr(e),str(i))
+exec(''.join(chr(int(oc[i:i+{nbr_bytes}],{base})) for i in range(0,len(oc),{nbr_bytes})))
+""".format(indicator_key=INDICATOR_KEY, all_keys=TOTAL_OBFS_KEYS, nbr_bytes=NBR_BYTES, base=len(TOTAL_OBFS_KEYS))
+######### CONFIGURATION END ############
+
+def baseN(num, b, numerals="0123456789abcdefghijklmnopqrstuvwxyz"):
+    """Convert to base"""
+    return ((num == 0) and numerals[0]) or (baseN(num // b, b, numerals).lstrip(numerals[0]) + numerals[num % b])
+
+dangerous_file = codecs.open(CODE_TO_HIDE_PATH, "r", "utf-8-sig")
+
+# I. Obfuscate the invisible unzipping code in space
+unziping_code_binary_gen = (baseN(ord(i), len(SIMPLE_OBFS_KEYS)) for i in hidden_unziping_code)
+unziping_code_binary = ''.join('0'*(NBR_BYTES - len(x)) + x for x in unziping_code_binary_gen)  # Normalize to 8 bits
+unziping_code_spaces = ''.join(chr(TOTAL_OBFS_KEYS[int(x, base=len(TOTAL_OBFS_KEYS))]) for x in unziping_code_binary)  # convert to spaces
+print(len(unziping_code_spaces))
+
+# II. Obfuscate the dangerous code
+obfucated_code_gen = (baseN(ord(i), len(TOTAL_OBFS_KEYS)) for i in dangerous_file.read())  # convert to base N
+obfucated_code_N_base = ''.join('0'*(NBR_BYTES - len(x)) + x for x in obfucated_code_gen)  # Normalize to NBR_BYTES bytes
+obfucated_code = ''.join(chr(TOTAL_OBFS_KEYS[int(x, base=len(TOTAL_OBFS_KEYS))]) for x in obfucated_code_N_base)  # convert to spaces
+safe_file = codecs.open(SAFE_CODE_PATH, "r", "utf-8-sig")
+
+# Add the unzipping code on the first function
 docstring_cut = safe_file.read().split('"""')
-every_line = [l for i in range(1, len(docstring_cut), 2) for l in docstring_cut[i].split('\n')]
-size_batch = len(obfucated_code) // (len(every_line) - len(docstring_cut) // 2)
+docstring_cut[1] = unziping_code_spaces + docstring_cut[1]
 
+# Add the rest on the other lines
+every_line = [l for i in range(1, len(docstring_cut), 2) for l in docstring_cut[i].split('\n')]
+size_batch = len(obfucated_code) // (len(every_line) - 2 - len(docstring_cut) // 2)  # -1 because we dont want the first
+
+k = 0
 for i in range(1, len(docstring_cut), 2):
     line_cut = docstring_cut[i].split('\n')
-    for j in range(len(line_cut) - 1):
-        line_cut[j] = line_cut[j] + obfucated_code[size_batch * (i + j): size_batch * (i+j+1)]
-    # IamHERE
+    starting_line = 1 if i == 1 else 0
+    for j in range(starting_line, len(line_cut) - 1):
+        line_cut[j] = line_cut[j] + chr(INDICATOR_KEY) + obfucated_code[size_batch * (k): size_batch * (k+1)] + chr(INDICATOR_KEY)
+        k += 1
     docstring_cut[i] = '\n'.join(line_cut)
 
 regonisied = '"""'.join(docstring_cut)
 
-final_file = codecs.open("le_truc_final.py", "w", "utf-8-sig")
+regonisied = regonisied.replace(unziping_indice, visible_unziping_code)
+final_file = codecs.open(OUTPUT_CODE_PATH, "w", "utf-8-sig")
 final_file.write(regonisied)
 
 final_file.close()

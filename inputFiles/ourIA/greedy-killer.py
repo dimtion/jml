@@ -86,7 +86,7 @@ def minmax(coins_left, score_p1, len_path_p1, loc_p1, score_p2, len_path_p2, loc
     pl_path = pl_last_coin + best_pl_path
     return best_value, en_path, pl_path
 
-
+def minmax2(coins_left, score_p1, )
 def initialisationTurn(mazeWidth, mazeHeight, mazeMap, timeAllowed, playerLocation, opponentLocation, coins):
     global route, dists_matrix, route_matrix
 
