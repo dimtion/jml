@@ -38,7 +38,7 @@ RIGHT = 'R'
 # It will be displayed in the maze
 # You have to edit this code
 
-TEAM_NAME = "Random player"
+TEAM_NAME = "Random player2"
 
 ##################################################################################################################
 #################################################### PRE-DEFINED FUNCTIONS ###################################################
@@ -67,10 +67,10 @@ def readFromPipe () :
     # Reads from the stdin channel and returns the structure associated to the string
     try :
         text = sys.stdin.readline()
-        # debug(text)
         return ast.literal_eval(text.strip())
-    except :
+    except Exception as e:
         pass
+        debug(e)
         # os._exit(-1)
 
 ##################################################################################################################
@@ -78,8 +78,7 @@ def readFromPipe () :
 # Sends the text to the maze application
 # Do not edit this code
 
-def writeToPipe (text) :
-    
+def writeToPipe (text):
     # Writes to the stdout channel
     sys.stdout.write(text)
     sys.stdout.flush()

